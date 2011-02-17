@@ -1,0 +1,126 @@
+JoyNet3 Design Document
+-----------------------
+
+JoyNet3 will be a reimplementation of the game synchronization code that was
+in the original JoyNet. I will be attempting to use "enet" as a basis for
+establishing network connectivity. The controller interfaces will be built on
+top of this.
+
+I will try to use ENet's existing structures instead of developing my own so I
+will have access to all of ENet's functionality without having to make
+ammendments to JoyNet3.
+
+
+Client/Server Design
+--------------------
+
+"enet" provides a slick way to manage clients and servers. My goal is to
+utilize this existing functionality.
+
+The server needs to maintain a list of clients. Clients who "connect" to the
+game will be added to a separate player list. All clients will be able to 
+receive system and chat messages but only players will receive game messages.
+
+I will need to make some serialization functions to make it easier to build
+complex packets. These will be of the form getc(), getw(), getl(), and read().
+They should be implemented in a way such that get* can be replaced by put*
+without a hitch. This will make it easy to maintain serialization code as you
+can just copy, paste, and replace. This serialization code should work directly
+with ENetPacket's if possible to avoid introducing yet more data structures.
+
+
+Channels
+--------
+
+JoyNet3 will use ENet's clever channel system to handle different kinds of
+events. I plan to use 4 channels: system, chat, game, and user. I will probable
+make it possible to add more user channels in case someone needs to have more.
+
+The system channel will handle messages pertaining to connecting, disconnecting,
+etc.
+
+The chat channel will handle user identities, groups, chat messages, and
+possibly avatars.
+
+The game channel will handle game-specific messages and data.
+
+The user channel will be for anything else the user needs that doesn't fit into
+any of the other channels.
+
+
+Engine Design
+-------------
+
+The JoyNet3 engine will provide a self-contained collection of routines which
+will require minimal effort on the part of the user to implement. The idea is
+to send each player's input data to the server and have the server construct a
+full frame of input data and send that back to each player.
+
+Frame construction should be flexible enough so that different input
+configurations will be able utilize the same system. Some games might want
+analog or mouse input and JoyNet3 needs to be able to handle these things in an
+elegant way.
+
+A game using this engine will use a regular timer to keep the game up to speed.
+At each timer tick, instead of processing the logic directly the game will
+process one logic tick for each frame of input data that is in the buffer. This
+will keep the game from lagging behind.
+
+The server will assume each client's input stays the same if the client data
+does not come in on time. This method will be copied from the original JoyNet.
+
+JoyNet3 will have its own controller structure which will be configurable. It
+will contain a series of buttons and axes. I need to allow each client to have
+its own controller configuration which the server and other players will be
+aware of.
+
+When you connect to a game the server will send you information about all the
+currently connected players. Your controller configuration should be set before
+this happens so the server and other players can be made aware of what kind of
+data to expect from the server for input frames. At each player connect or
+disconnect the server should update all players with the new information.
+
+Players can connect to the game until all the player slots are full. When a game
+is in progress no players can connect.
+
+I need a simpler design than what I was using in JoyNet2 for handling events.
+I think it might be good to have a single callback for events and require the
+user to write up a switch statement to handle the various events that the engine
+generates instead of having to write a separate callback for each type of event.
+The user would be required to handle certain cases like the game start, pause,
+resume, and end events. There should probably be a separate callback for each
+channel for simplicity.
+
+During gameplay, the user will fill in the controller structure and send it off
+to the server. The server will compile all the controller data into a single
+packet and send it back to all clients as an input frame. The user should never
+use the local controller data to handle anything that affects gameplay.
+
+Local play should be handled by the engine as well allowing you to use the same
+code to play whether or not you are online. When offline, the control data sent
+to the server should be placed into the input frames buffer directly and should
+generate 1 input frame for each frame sent in by the user.
+
+The engine should support multiple players on a single PC, even when playing
+online. This means the client code will need to keep track of how many players
+are connected through it. The server will need to keep track as well so it knows
+how to decode the messages it receives from each client.
+
+The mouse engine should allow all users to share a mouse or each user to have
+their own mouse.
+
+
+API
+---
+
+int joynet3_init(void);
+int joynet3_exit(void);
+void joynet3_set_id_string(const char * id); // ID should be game-specific
+
+
+Allegro 5
+---------
+
+JoyNet3 will not be tied directly to Allegro 5 but will have an interface to it
+similar to how DUMB connects to Allegro. This interface will utilize the event
+system Allegro 5 provides.
