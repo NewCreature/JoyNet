@@ -158,6 +158,7 @@ void joynet_watch_game(JOYNET_GAME * gp);
 void joynet_leave_game(JOYNET_GAME * gp);
 void joynet_add_game_option(JOYNET_GAME * gp, int * op);
 void joynet_add_player_option(JOYNET_GAME * gp, int player, int * op);
+void joynet_update_game_option(JOYNET_GAME * gp, int * option);
 void joynet_update_game_options(JOYNET_GAME * gp);
 void joynet_update_player_options(JOYNET_GAME * gp, int player);
 

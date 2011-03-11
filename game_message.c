@@ -216,6 +216,11 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 						{
 							joynet_current_server_game->player[assigned_player]->controller->port = assigned_player;
 							joynet_current_server_game->player[assigned_player]->controller->backport = controller;
+							
+							/* reset selections to prevent bugs */
+							memset(joynet_current_server_game->player[assigned_player]->selected_content, 0, sizeof(unsigned long) * JOYNET_GAME_MAX_CONTENT_LISTS);
+							memset(joynet_current_server_game->player[assigned_player]->selected_content_index, 0, sizeof(int) * JOYNET_GAME_MAX_CONTENT_LISTS);
+							
 							joynet_serialize(sp->serial_data, data);
 							joynet_write(sp->serial_data, mp->data, sizeof(short));
 							joynet_putw(sp->serial_data, assigned_player);
@@ -447,6 +452,26 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 			}
 			break;
 		}
+		case JOYNET_GAME_MESSAGE_UPDATE_OPTION:
+		{
+			short opt_num;
+			
+			/* store options */
+			joynet_serialize(sp->serial_data, mp->data);
+			joynet_getw(sp->serial_data, &opt_num);
+			joynet_getl(sp->serial_data, (long *)joynet_current_server_game->option[opt_num]);
+			
+			/* send to all players/specators */
+			for(i = 0; i < sp->max_clients; i++)
+			{
+				if(sp->client[i]->peer && (sp->client[i]->playing || sp->client[i]->spectating))
+				{
+					pp = joynet_build_packet(JOYNET_GAME_MESSAGE_UPDATE_OPTION, mp->data, mp->data_size);
+					enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_GAME, pp);
+				}
+			}
+			break;
+		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTIONS:
 		{
 			long option;
@@ -609,49 +634,53 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 					}
 				}
 				free(cdata);
-			}
-			
-			/* adjust selections to ensure players have selected content that everyone has */
-			for(i = 0; i < joynet_current_server_game->players; i++)
-			{
-				if(joynet_current_server_game->player[i]->controller)
+				
+				/* adjust selections to ensure players have selected content that everyone has */
+				for(i = 0; i < joynet_current_server_game->players; i++)
 				{
-					for(j = 0; j < joynet_current_server_game->server_master_content_list[list]->count; j++)
+					if(joynet_current_server_game->player[i]->controller)
 					{
-						if(joynet_current_server_game->player[i]->selected_content[list] == joynet_current_server_game->server_master_content_list[list]->hash[j])
+						/* only change selection if something was selected before and it's not available any more */
+						if(joynet_current_server_game->player[i]->selected_content[list] != 0)
 						{
-							break;
-						}
-					}
-//					printf("player %d selected content %d: %lu\n", i, list, joynet_current_server_game->player[i]->selected_content[list]);
-					/* fix me: this causes selections to reset to 0 when they shouldn't */
-					if(j == joynet_current_server_game->server_master_content_list[list]->count)
-					{
-						joynet_serialize(sp->serial_data, data);
-						joynet_putw(sp->serial_data, i);
-						joynet_putw(sp->serial_data, list);
-						joynet_putl(sp->serial_data, joynet_current_server_game->server_master_content_list[list]->hash[0]);
-						for(j = 0; j < sp->max_clients; j++)
-						{
-							if(sp->client[j]->peer && (sp->client[j]->playing || sp->client[j]->spectating))
+							for(j = 0; j < joynet_current_server_game->server_master_content_list[list]->count; j++)
 							{
-								pp = joynet_create_packet(JOYNET_GAME_MESSAGE_SELECT_PLAYER_CONTENT, sp->serial_data);
-								enet_peer_send(sp->client[j]->peer, JOYNET_CHANNEL_GAME, pp);
+								if(joynet_current_server_game->player[i]->selected_content[list] == joynet_current_server_game->server_master_content_list[list]->hash[j])
+								{
+									break;
+								}
 							}
-						}
-					}
-					else if(joynet_current_server_game->player[i]->selected_content[list] != 0)
-					{
-						joynet_serialize(sp->serial_data, data);
-						joynet_putw(sp->serial_data, i);
-						joynet_putw(sp->serial_data, list);
-						joynet_putl(sp->serial_data, joynet_current_server_game->player[i]->selected_content[list]);
-						for(j = 0; j < sp->max_clients; j++)
-						{
-							if(sp->client[j]->peer && (sp->client[j]->playing || sp->client[j]->spectating))
+		//					printf("player %d selected content %d: %lu\n", i, list, joynet_current_server_game->player[i]->selected_content[list]);
+							/* fix me: this causes selections to reset to 0 when they shouldn't */
+							if(j == joynet_current_server_game->server_master_content_list[list]->count)
 							{
-								pp = joynet_create_packet(JOYNET_GAME_MESSAGE_SELECT_PLAYER_CONTENT, sp->serial_data);
-								enet_peer_send(sp->client[j]->peer, JOYNET_CHANNEL_GAME, pp);
+								joynet_serialize(sp->serial_data, data);
+								joynet_putw(sp->serial_data, i);
+								joynet_putw(sp->serial_data, list);
+								joynet_putl(sp->serial_data, joynet_current_server_game->server_master_content_list[list]->hash[0]);
+								for(j = 0; j < sp->max_clients; j++)
+								{
+									if(sp->client[j]->peer && (sp->client[j]->playing || sp->client[j]->spectating))
+									{
+										pp = joynet_create_packet(JOYNET_GAME_MESSAGE_SELECT_PLAYER_CONTENT, sp->serial_data);
+										enet_peer_send(sp->client[j]->peer, JOYNET_CHANNEL_GAME, pp);
+									}
+								}
+							}
+							else if(joynet_current_server_game->player[i]->selected_content[list] != 0)
+							{
+								joynet_serialize(sp->serial_data, data);
+								joynet_putw(sp->serial_data, i);
+								joynet_putw(sp->serial_data, list);
+								joynet_putl(sp->serial_data, joynet_current_server_game->player[i]->selected_content[list]);
+								for(j = 0; j < sp->max_clients; j++)
+								{
+									if(sp->client[j]->peer && (sp->client[j]->playing || sp->client[j]->spectating))
+									{
+										pp = joynet_create_packet(JOYNET_GAME_MESSAGE_SELECT_PLAYER_CONTENT, sp->serial_data);
+										enet_peer_send(sp->client[j]->peer, JOYNET_CHANNEL_GAME, pp);
+									}
+								}
 							}
 						}
 					}
@@ -1117,6 +1146,15 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 				joynet_getl(cp->serial_data, &option);
 				*joynet_current_game->player[player]->option[i] = option;
 			}
+			break;
+		}
+		case JOYNET_GAME_MESSAGE_UPDATE_OPTION:
+		{
+			short opt_num;
+			
+			joynet_serialize(cp->serial_data, mp->data);
+			joynet_getw(cp->serial_data, &opt_num);
+			joynet_getl(cp->serial_data, (long *)joynet_current_game->option[opt_num]);
 			break;
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTIONS:

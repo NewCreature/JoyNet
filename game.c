@@ -217,6 +217,10 @@ void joynet_connect_to_game(JOYNET_GAME * gp, short controller, short player)
 				gp->player[assigned_player]->local = 1;
 				gp->player_count++;
 				gp->controller[controller]->port = assigned_player;
+				
+				/* reset selections to prevent bugs */
+				memset(gp->player[assigned_player]->selected_content, 0, sizeof(unsigned long) * JOYNET_GAME_MAX_CONTENT_LISTS);
+				memset(gp->player[assigned_player]->selected_content_index, 0, sizeof(int) * JOYNET_GAME_MAX_CONTENT_LISTS);			
 			}
 			if(gp->callback)
 			{
@@ -327,6 +331,36 @@ void joynet_add_player_option(JOYNET_GAME * gp, int player, int * op)
 }
 
 /* high level functions */
+void joynet_update_game_option(JOYNET_GAME * gp, int * option)
+{
+	char data[1024] = {0};
+	ENetPacket * pp;
+	int i, c = 0;;
+	
+	if(gp->client && gp->client->master)
+	{
+		for(i = 0; i < gp->options; i++)
+		{
+			if(gp->option[i] == option)
+			{
+				c = i;
+				break;
+			}
+		}
+		if(i < gp->options)
+		{
+			joynet_serialize(gp->client->serial_data, data);
+			joynet_putw(gp->client->serial_data, c);
+			joynet_putl(gp->client->serial_data, *gp->option[c]);
+			pp = joynet_create_packet(JOYNET_GAME_MESSAGE_UPDATE_OPTION, gp->client->serial_data);
+			enet_peer_send(gp->client->peer, JOYNET_CHANNEL_GAME, pp);
+		}
+	}
+	else
+	{
+	}
+}
+
 void joynet_update_game_options(JOYNET_GAME * gp)
 {
 	char data[1024] = {0};
