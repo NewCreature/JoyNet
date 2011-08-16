@@ -146,6 +146,7 @@ int joynet_qsort_controllers(const void * e1, const void * e2);
 JOYNET_GAME * joynet_create_game(char * name, int type, int max_players, int max_controllers, int(*callback)(JOYNET_MESSAGE * mp));
 void joynet_setup_game_controllers(JOYNET_GAME * gp, int buttons, int axes, int buffer_size);
 void joynet_destroy_game(JOYNET_GAME * gp);
+void joynet_reset_game(JOYNET_GAME * gp);
 void joynet_select_game(JOYNET_GAME * gp);
 int joynet_open_game_server(JOYNET_GAME * gp, JOYNET_SERVER * sp, int port, int clients);
 int joynet_connect_to_game_server(JOYNET_GAME * gp, JOYNET_CLIENT * cp, char * address, int port);

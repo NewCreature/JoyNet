@@ -454,12 +454,14 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTION:
 		{
+			long option;
 			short opt_num;
 			
-			/* store options */
+			/* store option */
 			joynet_serialize(sp->serial_data, mp->data);
 			joynet_getw(sp->serial_data, &opt_num);
-			joynet_getl(sp->serial_data, (long *)joynet_current_server_game->option[opt_num]);
+			joynet_getl(sp->serial_data, &option);
+			joynet_current_server_game->server_option[opt_num] = option;
 			
 			/* send to all players/specators */
 			for(i = 0; i < sp->max_clients; i++)
@@ -903,6 +905,11 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_CHECK_ID_FAIL:
 		{
+			/* set callback so the failure notice can be processed through the custom callback */
+			if(joynet_current_game->callback)
+			{
+				joynet_set_client_channel_callback(cp, JOYNET_CHANNEL_GAME, joynet_current_game->callback);
+			}
 			joynet_current_game->client = NULL; // incorrect server, play locally
 			break;
 		}

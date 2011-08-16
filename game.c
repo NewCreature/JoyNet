@@ -30,7 +30,7 @@ int joynet_qsort_controllers(const void * e1, const void * e2)
     return 0;
 }
 
-static void joynet_reset_game(JOYNET_GAME * gp)
+void joynet_reset_game(JOYNET_GAME * gp)
 {
 	int i;
 	
@@ -335,7 +335,7 @@ void joynet_update_game_option(JOYNET_GAME * gp, int * option)
 {
 	char data[1024] = {0};
 	ENetPacket * pp;
-	int i, c = 0;;
+	int i, c = 0;
 	
 	if(gp->client && gp->client->master)
 	{
