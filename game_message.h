@@ -30,9 +30,12 @@
 #define JOYNET_GAME_MESSAGE_INPUT                 18
 #define JOYNET_GAME_MESSAGE_NO_INPUT              19
 #define JOYNET_GAME_MESSAGE_SELECT_PLAYER         20
+#define JOYNET_GAME_MESSAGE_INPUT_OVERFLOW        24
 
 #define JOYNET_GAME_MESSAGE_CHECK_ID              21
 #define JOYNET_GAME_MESSAGE_CHECK_ID_FAIL         22
+
+#define JOYNET_GAME_MESSAGE_USER                  64
 
 int joynet_server_internal_game_callback(ENetEvent * ep);
 void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp);

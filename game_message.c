@@ -864,6 +864,34 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 			}
 			break;
 		}
+		case JOYNET_GAME_MESSAGE_INPUT_OVERFLOW:
+		{
+			int client = joynet_get_client_from_peer(sp, mp->event->peer);
+			ENetPacket * pp;
+			char data[4];
+			int i, j;
+			for(i = 0; i < joynet_current_server_game->players; i++)
+			{
+				/* update controllers related to this client */
+				if(joynet_current_server_game->player[i]->controller && joynet_current_server_game->player[i]->client == client)
+				{
+					joynet_serialize(joynet_current_server_game->server->serial_data, data);
+					joynet_putw(joynet_current_server_game->server->serial_data, i);
+					for(j = 0; j < joynet_current_server_game->server->max_clients; j++)
+					{
+						if(j != client && joynet_current_server_game->server->client[j]->peer && (joynet_current_server_game->server->client[j]->playing || joynet_current_server_game->server->client[j]->spectating))
+						{
+							pp = joynet_create_packet(JOYNET_GAME_MESSAGE_REMOVE_PLAYER, joynet_current_server_game->server->serial_data);
+							enet_peer_send(joynet_current_server_game->server->client[j]->peer, JOYNET_CHANNEL_GAME, pp);
+						}
+					}
+					free(joynet_current_server_game->player[i]->controller);
+					joynet_current_server_game->player[i]->controller = NULL;
+					joynet_current_server_game->player_count--;
+				}
+			}
+			break;
+		}
 		case JOYNET_GAME_MESSAGE_SELECT_PLAYER:
 		{
 			short player;
@@ -1306,6 +1334,8 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_INPUT:
 		{
+			ENetPacket * pp;
+			
 			switch(joynet_current_game->type)
 			{
 				case JOYNET_GAME_TYPE_MOUSE:
@@ -1330,6 +1360,14 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 						joynet_current_game->input_buffer->write_pos = 0;
 					}
 					joynet_current_game->input_buffer->frames++;
+					
+					/* if we have exceeded the size of the buffer, the game will be desynced for this player,
+					 * let the server know this has happened */
+					if(joynet_current_game->input_buffer->frames > joynet_current_game->max_buffer_frames)
+					{
+						pp = joynet_create_packet(JOYNET_GAME_MESSAGE_INPUT_OVERFLOW, NULL);
+						enet_peer_send(joynet_current_game->client->peer, JOYNET_CHANNEL_GAME, pp);
+					}
 					break;
 				}
 			}
