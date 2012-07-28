@@ -1,7 +1,7 @@
 #ifndef JOYNET3_H
 #define JOYNET3_H
 
-#include "enet-1.2/include/enet/enet.h"
+#include "enet-1.3.1/include/enet/enet.h"
 #include "structs.h"
 
 #define JOYNET_CHANNEL_SYSTEM 0 // system channel used for setting up connections
@@ -23,6 +23,7 @@
 
 int joynet_init(void);
 void joynet_exit(void);
+void joynet_ping(const char * host, int port);
 void joynet_srand(unsigned int seed);
 int joynet_rand(void);
 double joynet_drand(void);

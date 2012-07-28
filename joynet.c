@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "enet-1.2/include/enet/enet.h"
+#include "enet-1.3.1/include/enet/enet.h"
 #include "joynet.h"
 #include "serialize.h"
 
@@ -19,6 +19,30 @@ int joynet_init(void)
 void joynet_exit(void)
 {
 	enet_deinitialize();
+}
+
+void joynet_ping(const char * url, int port)
+{
+	ENetAddress address;
+	ENetHost * host;
+	ENetPeer * peer;
+	
+	if(enet_address_set_host(&address, url) < 0)
+	{
+		return;
+	}
+	address.port = port;
+	host = enet_host_create(NULL, 1, 0, 0, 0);
+	if(!host)
+	{
+		return;
+	}
+	peer = enet_host_connect(host, &address, 4, 0);
+	if(!peer)
+	{
+		return;
+	}
+	enet_host_destroy(host);
 }
 
 void joynet_srand(unsigned int seed)
