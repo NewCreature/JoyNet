@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-#include "enet-1.2/include/enet/enet.h"
+#include "enet-1.3.1/include/enet/enet.h"
 #include "joynet.h"
 #include "serialize.h"
 #include "message.h"
@@ -54,12 +54,12 @@ int joynet_connect_client_to_server(JOYNET_CLIENT * cp, char * host, int port)
 		return 0;
 	}
 	cp->address.port = port;
-	cp->host = enet_host_create(NULL, 1, 0, 0);
+	cp->host = enet_host_create(NULL, 1, 0, 0, 0);
 	if(!cp->host)
 	{
 		return 0;
 	}
-	cp->peer = enet_host_connect(cp->host, &cp->address, 4);
+	cp->peer = enet_host_connect(cp->host, &cp->address, 4, 0);
 	if(!cp->peer)
 	{
 		return 0;

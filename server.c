@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "enet-1.2/include/enet/enet.h"
+#include "enet-1.3.1/include/enet/enet.h"
 #include "joynet.h"
 #include "serialize.h"
 #include "message.h"
@@ -49,7 +49,7 @@ int joynet_open_server(JOYNET_SERVER * sp, int port, int connections)
 	
 	sp->address.host = ENET_HOST_ANY;
 	sp->address.port = port;
-	sp->host = enet_host_create(&sp->address, connections, 0, 0);
+	sp->host = enet_host_create(&sp->address, connections, 0, 0, 0);
 	if(!sp->host)
 	{
 		return 0;
