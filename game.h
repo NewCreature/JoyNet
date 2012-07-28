@@ -33,12 +33,6 @@ typedef struct
 	char button[JOYNET_GAME_MAX_CONTROLLER_BUTTONS];
 	float axis[JOYNET_GAME_MAX_CONTROLLER_AXES]; // convert these to char to upload
 	
-	/* mouse */
-	short mouse_x;
-	short mouse_y;
-	short mouse_z;
-	char mouse_b;
-	
 	/* button bits for controllers */
 	char bits[2];
 	
@@ -46,8 +40,22 @@ typedef struct
 
 typedef struct
 {
+
+	int port; // which controller "port" is this plugged into
+	int backport; // which local controller is connected to this controller
+
+	short x;
+	short y;
+	short z;
+	char b;
+
+} JOYNET_MOUSE;
+
+typedef struct
+{
 	
-	JOYNET_CONTROLLER * controller;
+//	JOYNET_CONTROLLER * controller;
+	int playing;
 	
 	char name[256];
 	unsigned long selected_content[JOYNET_GAME_MAX_CONTENT_LISTS]; // 0 means no selection
@@ -73,6 +81,8 @@ typedef struct
 	int previous_write_pos;
 	int frames;
 	int frame_size;
+	int filled_frames;
+	int read_frames;
 	
 } JOYNET_INPUT_BUFFER;
 
@@ -103,8 +113,13 @@ typedef struct
 	int players;
 	int player_count;
 	
-	/* local controllers */
+	/* local controllers (use these to store controls to send to server) */
 	JOYNET_CONTROLLER * controller[JOYNET_GAME_MAX_CONTROLLERS];
+	JOYNET_MOUSE * mouse[JOYNET_GAME_MAX_CONTROLLERS];
+	
+	/* player controllers (use these in your game logic) */
+	JOYNET_CONTROLLER * player_controller[JOYNET_GAME_MAX_PLAYERS];
+	JOYNET_MOUSE * player_mouse[JOYNET_GAME_MAX_PLAYERS];
 	
 	/* options */
 	int * option[JOYNET_GAME_MAX_OPTIONS];
@@ -164,6 +179,7 @@ void joynet_update_game_options(JOYNET_GAME * gp);
 void joynet_update_player_options(JOYNET_GAME * gp, int player);
 
 /* content management */
+void joynet_reset_game_content(JOYNET_GAME * gp, int list);
 void joynet_add_game_content(JOYNET_GAME * gp, int list, unsigned long hash);
 void joynet_select_game_content(JOYNET_GAME * gp, int player, int list, unsigned long hash);
 
