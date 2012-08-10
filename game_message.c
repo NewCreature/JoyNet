@@ -807,6 +807,8 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		case JOYNET_GAME_MESSAGE_INPUT:
 		{
 			int client = joynet_get_client_from_peer(sp, mp->event->peer);
+			short x, y, z;
+			char b, d;
 			
 			switch(joynet_current_server_game->type)
 			{
@@ -818,21 +820,44 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 						joynet_serialize(sp->serial_data, mp->data);
 						if(joynet_current_server_game->controller_axes > 0)
 						{
-							joynet_getw(sp->serial_data, &joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->x);
+							joynet_getw(sp->serial_data, &x);
+							if(x != joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->x)
+							{
+								joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->x = x;
+								d = 1;
+							}
 						}
 						if(joynet_current_server_game->controller_axes > 1)
 						{
-							joynet_getw(sp->serial_data, &joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->y);
+							joynet_getw(sp->serial_data, &y);
+							if(y != joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->y)
+							{
+								joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->y = y;
+								d = 1;
+							}
 						}
 						if(joynet_current_server_game->controller_axes > 2)
 						{
-							joynet_getw(sp->serial_data, &joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->z);
+							joynet_getw(sp->serial_data, &z);
+							if(z != joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->z)
+							{
+								joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->z = z;
+								d = 1;
+							}
 						}
 						if(joynet_current_server_game->controller_buttons > 0)
 						{
-							joynet_getc(sp->serial_data, &joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->b);
+							joynet_getc(sp->serial_data, &b);
+							if(b != joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->b)
+							{
+								joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->b = b;
+								d = 1;
+							}
 						}
-						joynet_current_server_game->received_input = 1;
+						if(d)
+						{
+							joynet_current_server_game->received_input = 1;
+						}
 						break;
 					}
 					break;
@@ -908,11 +933,22 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 
 			joynet_serialize(sp->serial_data, mp->data);
 			joynet_getw(sp->serial_data, &player);
+			joynet_current_server_game->current_player = player;
+			switch(joynet_current_server_game->type)
+			{
+				/* clear buttons in mouse-based games to prevent clicks from current player's previous turn
+				 * from happening in this turn */
+				case JOYNET_GAME_TYPE_MOUSE:
+				{
+					joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->b = 0;
+					joynet_current_server_game->received_input = 1; // force server to send current input
+					break;
+				}
+			}
 			if(joynet_current_server_game->player[player]->playing)
 			{
 				for(i = 0; i < sp->max_clients; i++)
 				{
-					joynet_current_server_game->current_player = player;
 					if(sp->client[i]->peer && (sp->client[i]->playing || sp->client[i]->spectating == 1))
 					{
 						pp = joynet_build_packet(JOYNET_GAME_MESSAGE_SELECT_PLAYER, mp->data, mp->data_size);
@@ -1428,7 +1464,7 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 				case JOYNET_GAME_TYPE_MOUSE:
 				{
 					/* no data received yet, build a frame from scratch */
-					if(joynet_current_game->input_buffer->write_pos == joynet_current_game->input_buffer->previous_write_pos)
+					if(joynet_current_game->input_buffer->filled_frames == 0)
 					{
 						joynet_serialize(cp->serial_data, &joynet_current_game->input_buffer->data[joynet_current_game->input_buffer->write_pos]);
 						if(joynet_current_game->controller_axes > 0)
