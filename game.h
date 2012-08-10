@@ -22,6 +22,7 @@
 #define JOYNET_GAME_STATE_OFF         0
 #define JOYNET_GAME_STATE_PLAYING     1
 #define JOYNET_GAME_STATE_PAUSED      2
+#define JOYNET_GAME_STATE_LOADING     3
 
 typedef struct
 {
