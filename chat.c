@@ -51,7 +51,29 @@ void joynet_handle_server_chat_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 			packet = joynet_create_packet(JOYNET_CHAT_MESSAGE_TALK, sp->serial_data);
 			for(i = 0; i < sp->max_clients; i++)
 			{
-				if((sp->client[i]->peer) && ((mp->type == JOYNET_CHAT_MESSAGE_GROUP_TALK) || (sp->client[i]->group == sp->client[client]->group)))
+				if((sp->client[i]->peer) && ((mp->type != JOYNET_CHAT_MESSAGE_GROUP_TALK) || (sp->client[i]->group == sp->client[client]->group)))
+				{
+					enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_CHAT, packet);
+				}
+			}
+			break;
+		}
+		case JOYNET_CHAT_MESSAGE_VOIP:
+		case JOYNET_CHAT_MESSAGE_GROUP_VOIP:
+		{
+			int client = joynet_get_client_from_peer(sp, mp->event->peer);
+			ENetPacket * packet;
+			char data[4096] = {0};
+			int i;
+
+			/* send client number along with data so we can render audio to different streams */
+			joynet_serialize(sp->serial_data, data);
+			joynet_putw(sp->serial_data, client);
+			joynet_write(sp->serial_data, mp->data, mp->data_size);
+			packet = joynet_create_packet(JOYNET_CHAT_MESSAGE_VOIP, sp->serial_data);
+			for(i = 0; i < sp->max_clients; i++)
+			{
+				if(i != client && sp->client[i]->peer && ((mp->type != JOYNET_CHAT_MESSAGE_GROUP_VOIP) || (sp->client[i]->group == sp->client[client]->group)))
 				{
 					enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_CHAT, packet);
 				}
@@ -93,6 +115,21 @@ void joynet_handle_client_chat_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 			if(cp->chat_callback)
 			{
 				cp->chat_callback(user, message);
+			}
+			break;
+		}
+		case JOYNET_CHAT_MESSAGE_VOIP:
+		case JOYNET_CHAT_MESSAGE_GROUP_VOIP:
+		{
+			short client;
+			char voip_data[4096] = {0};
+			
+			joynet_serialize(cp->serial_data, mp->data);
+			joynet_getw(cp->serial_data, &client);
+			joynet_read(cp->serial_data, voip_data, mp->data_size - sizeof(short));
+			if(cp->voip_callback)
+			{
+				cp->voip_callback(client, voip_data, mp->data_size - sizeof(short));
 			}
 			break;
 		}

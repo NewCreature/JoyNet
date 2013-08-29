@@ -197,3 +197,19 @@ void joynet_set_client_chat_callback(JOYNET_CLIENT * cp, int(*callback)(char * u
 {
 	cp->chat_callback = callback;
 }
+
+void joynet_set_client_voip_callback(JOYNET_CLIENT * cp, int(*callback)(int client, void * data, int size))
+{
+	cp->voip_callback = callback;
+}
+
+void joynet_send_client_voip_data(JOYNET_CLIENT * cp, void * data, int size)
+{
+	ENetPacket * pp;
+	
+	if(cp->peer)
+	{
+		pp = joynet_build_packet(JOYNET_CHAT_MESSAGE_VOIP, data, size);
+		enet_peer_send(cp->peer, JOYNET_CHANNEL_CHAT, pp);
+	}
+}

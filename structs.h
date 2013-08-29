@@ -47,6 +47,7 @@ typedef struct
 	int(*global_callback)(ENetEvent * ep);
 	int(*channel_callback[JOYNET_MAX_CHANNELS])(JOYNET_MESSAGE * mp);
 	int(*chat_callback)(char * user, char * message);
+	int(*voip_callback)(int client, void * data, int size);
 	
 	/* serialization */
 	JOYNET_SERIAL_DATA * serial_data;
@@ -72,6 +73,7 @@ typedef struct
 	int(*global_callback)(ENetEvent * ep);
 	int(*internal_callback)(ENetEvent * ep);
 	int(*channel_callback[JOYNET_MAX_CHANNELS])(JOYNET_MESSAGE * mp);
+	int(*voice_chat_callback)();
 	
 	/* serialization */
 	JOYNET_SERIAL_DATA * serial_data;

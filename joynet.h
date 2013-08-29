@@ -20,6 +20,8 @@
 #define JOYNET_CHAT_MESSAGE_SET_GROUP   1
 #define JOYNET_CHAT_MESSAGE_TALK        2
 #define JOYNET_CHAT_MESSAGE_GROUP_TALK  3
+#define JOYNET_CHAT_MESSAGE_VOIP        4
+#define JOYNET_CHAT_MESSAGE_GROUP_VOIP  5
 
 int joynet_init(void);
 void joynet_exit(void);
@@ -53,6 +55,8 @@ void joynet_set_client_channel_callback(JOYNET_CLIENT * cp, int channel, int(*ca
 void joynet_set_client_group(JOYNET_CLIENT * cp, short group);
 void joynet_set_client_screen_name(JOYNET_CLIENT * cp, char * screen_name);
 void joynet_set_client_chat_callback(JOYNET_CLIENT * cp, int(*callback)(char * user, char * message));
+void joynet_set_client_voip_callback(JOYNET_CLIENT * cp, int(*callback)(int client, void * data, int size));
+void joynet_send_client_voip_data(JOYNET_CLIENT * cp, void * data, int size);
 
 #include "game.h"
 #include "game_message.h"
