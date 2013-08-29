@@ -255,55 +255,58 @@ void joynet_connect_to_game(JOYNET_GAME * gp, short controller, short player)
 				}
 			}
 		}
-		if(!gp->player[assigned_player]->playing)
+		if(assigned_player >= 0)
 		{
-			gp->player[assigned_player]->playing = 1;
-			if(gp->type == JOYNET_GAME_TYPE_CONTROLLERS)
+			if(!gp->player[assigned_player]->playing)
 			{
-				gp->player_controller[assigned_player]->port = assigned_player;
-			}
-			else if(gp->type == JOYNET_GAME_TYPE_MOUSE)
-			{
-				gp->player_mouse[assigned_player]->port = assigned_player;
-			}
-			gp->player[assigned_player]->local = 1;
-			gp->player_count++;
-			if(gp->type == JOYNET_GAME_TYPE_CONTROLLERS)
-			{
-				gp->controller[controller]->port = assigned_player;
-			}
-			else if(gp->type == JOYNET_GAME_TYPE_MOUSE)
-			{
-				gp->mouse[controller]->port = assigned_player;
-			}
-			
-			/* reset selections to prevent bugs */
-			memset(gp->player[assigned_player]->selected_content, 0, sizeof(unsigned long) * JOYNET_GAME_MAX_CONTENT_LISTS);
-			memset(gp->player[assigned_player]->selected_content_index, 0, sizeof(int) * JOYNET_GAME_MAX_CONTENT_LISTS);			
-			if(gp->callback)
-			{
-				JOYNET_MESSAGE message;
+				gp->player[assigned_player]->playing = 1;
+				if(gp->type == JOYNET_GAME_TYPE_CONTROLLERS)
+				{
+					gp->player_controller[assigned_player]->port = assigned_player;
+				}
+				else if(gp->type == JOYNET_GAME_TYPE_MOUSE)
+				{
+					gp->player_mouse[assigned_player]->port = assigned_player;
+				}
+				gp->player[assigned_player]->local = 1;
+				gp->player_count++;
+				if(gp->type == JOYNET_GAME_TYPE_CONTROLLERS)
+				{
+					gp->controller[controller]->port = assigned_player;
+				}
+				else if(gp->type == JOYNET_GAME_TYPE_MOUSE)
+				{
+					gp->mouse[controller]->port = assigned_player;
+				}
 				
-				/* send connect message */
-				message.type = JOYNET_GAME_MESSAGE_CONNECT;
-				joynet_serialize(gp->serial_data, data);
-				joynet_putw(gp->serial_data, controller);
-				joynet_putw(gp->serial_data, assigned_player);
-				message.data = data;
-				message.data_size = 4;
-				message.event = NULL;
-				gp->callback(&message);
-				
-				/* send add player message */
-				message.type = JOYNET_GAME_MESSAGE_ADD_PLAYER;
-				joynet_serialize(gp->serial_data, data);
-				joynet_putw(gp->serial_data, assigned_player);
-				joynet_putw(gp->serial_data, 2);
-				joynet_write(gp->serial_data, "", 2);
-				message.data = data;
-				message.data_size = 6;
-				message.event = NULL;
-				gp->callback(&message);
+				/* reset selections to prevent bugs */
+				memset(gp->player[assigned_player]->selected_content, 0, sizeof(unsigned long) * JOYNET_GAME_MAX_CONTENT_LISTS);
+				memset(gp->player[assigned_player]->selected_content_index, 0, sizeof(int) * JOYNET_GAME_MAX_CONTENT_LISTS);			
+				if(gp->callback)
+				{
+					JOYNET_MESSAGE message;
+					
+					/* send connect message */
+					message.type = JOYNET_GAME_MESSAGE_CONNECT;
+					joynet_serialize(gp->serial_data, data);
+					joynet_putw(gp->serial_data, controller);
+					joynet_putw(gp->serial_data, assigned_player);
+					message.data = data;
+					message.data_size = 4;
+					message.event = NULL;
+					gp->callback(&message);
+					
+					/* send add player message */
+					message.type = JOYNET_GAME_MESSAGE_ADD_PLAYER;
+					joynet_serialize(gp->serial_data, data);
+					joynet_putw(gp->serial_data, assigned_player);
+					joynet_putw(gp->serial_data, 2);
+					joynet_write(gp->serial_data, "", 2);
+					message.data = data;
+					message.data_size = 6;
+					message.event = NULL;
+					gp->callback(&message);
+				}
 			}
 		}
 	}

@@ -201,7 +201,7 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 					{
 						if(joynet_current_server_game->player[i]->playing && joynet_current_server_game->player_mouse[i]->backport == controller && joynet_current_server_game->player[i]->client == client)
 						{
-							break;
+//							break;
 						}
 					}
 				}
