@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "joynet.h"
 #include "game_message.h"
 #include "serialize.h"
@@ -438,10 +439,10 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_PLAYER_OPTIONS:
 		{
-			long option;
-			short count;
-			short length;
-			short player;
+			int32_t option;
+			int16_t count;
+			int16_t length;
+			int16_t player;
 			
 			/* store options */
 			joynet_serialize(sp->serial_data, mp->data);
@@ -469,8 +470,8 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTION:
 		{
-			long option;
-			short opt_num;
+			int32_t option;
+			int16_t opt_num;
 			
 			/* store option */
 			joynet_serialize(sp->serial_data, mp->data);
@@ -491,8 +492,8 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTIONS:
 		{
-			long option;
-			short count;
+			int32_t option;
+			int16_t count;
 			
 			/* store options */
 			joynet_serialize(sp->serial_data, mp->data);
@@ -602,9 +603,9 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		case JOYNET_GAME_MESSAGE_UPLOAD_PLAYER_CONTENT:
 		{
 			char * cdata;
-			short player;
-			short list;
-			short items;
+			int16_t player;
+			int16_t list;
+			int16_t items;
 			int oldsize = 0;
 			joynet_serialize(sp->serial_data, mp->data);
 			joynet_getw(sp->serial_data, &player);
@@ -616,7 +617,7 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 			}
 			for(i = 0; i < items; i++)
 			{
-				joynet_getl(sp->serial_data, (long *)(&joynet_current_server_game->server_content_list[player][list]->hash[i]));
+				joynet_getl(sp->serial_data, (int32_t *)(&joynet_current_server_game->server_content_list[player][list]->hash[i]));
 			}
 			joynet_current_server_game->server_content_list[player][list]->count = items;
 			
@@ -709,12 +710,12 @@ void joynet_handle_server_game_message(JOYNET_SERVER * sp, JOYNET_MESSAGE * mp)
 		{
 			short player;
 			short list;
-			unsigned long hash;
+			uint32_t hash;
 			
 			joynet_serialize(sp->serial_data, mp->data);
 			joynet_getw(sp->serial_data, &player);
 			joynet_getw(sp->serial_data, &list);
-			joynet_getl(sp->serial_data, (long *)(&hash));
+			joynet_getl(sp->serial_data, (int32_t *)(&hash));
 			
 			/* see if the requested content is in the master list */
 			for(i = 0; i < joynet_current_server_game->server_master_content_list[list]->count; i++)
@@ -1235,10 +1236,10 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_PLAYER_OPTIONS:
 		{
-			long option;
-			short player;
-			short length;
-			short options;
+			int32_t option;
+			int16_t player;
+			int16_t length;
+			int16_t options;
 			
 			joynet_serialize(cp->serial_data, mp->data);
 			joynet_getw(cp->serial_data, &player);
@@ -1254,17 +1255,17 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTION:
 		{
-			short opt_num;
+			int16_t opt_num;
 			
 			joynet_serialize(cp->serial_data, mp->data);
 			joynet_getw(cp->serial_data, &opt_num);
-			joynet_getl(cp->serial_data, (long *)joynet_current_game->option[opt_num]);
+			joynet_getl(cp->serial_data, (int32_t *)joynet_current_game->option[opt_num]);
 			break;
 		}
 		case JOYNET_GAME_MESSAGE_UPDATE_OPTIONS:
 		{
-			long option;
-			short count;
+			int32_t option;
+			int16_t count;
 			
 			joynet_serialize(cp->serial_data, mp->data);
 			joynet_getw(cp->serial_data, &count);
@@ -1277,8 +1278,8 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 		}
 		case JOYNET_GAME_MESSAGE_UPLOAD_PLAYER_CONTENT:
 		{
-			short list;
-			short items;
+			int16_t list;
+			int16_t items;
 			joynet_serialize(cp->serial_data, mp->data);
 			joynet_getw(cp->serial_data, &list);
 			joynet_getw(cp->serial_data, &items);
@@ -1288,21 +1289,21 @@ void joynet_handle_client_game_message(JOYNET_CLIENT * cp, JOYNET_MESSAGE * mp)
 			}
 			for(i = 0; i < items; i++)
 			{
-				joynet_getl(cp->serial_data, (long *)(&joynet_current_game->content_list[list]->hash[i]));
+				joynet_getl(cp->serial_data, (int32_t *)(&joynet_current_game->content_list[list]->hash[i]));
 			}
 			joynet_current_game->content_list[list]->count = items;
 			break;
 		}
 		case JOYNET_GAME_MESSAGE_SELECT_PLAYER_CONTENT:
 		{
-			short player;
-			short list;
-			unsigned long hash;
+			int16_t player;
+			int16_t list;
+			uint32_t hash;
 			
 			joynet_serialize(cp->serial_data, mp->data);
 			joynet_getw(cp->serial_data, &player);
 			joynet_getw(cp->serial_data, &list);
-			joynet_getl(cp->serial_data, (long *)(&hash));
+			joynet_getl(cp->serial_data, (int32_t *)(&hash));
 			
 			/* see if the requested content is in the master list */
 			joynet_current_game->player[player]->selected_content[list] = hash;

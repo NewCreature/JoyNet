@@ -54,32 +54,32 @@ void joynet_putc(JOYNET_SERIAL_DATA * dp, char c)
 	dp->size++;
 }
 
-void joynet_getw(JOYNET_SERIAL_DATA * dp, short * c)
+void joynet_getw(JOYNET_SERIAL_DATA * dp, int16_t * c)
 {
-	memcpy(c, dp->pointer, sizeof(short));
-	dp->pointer += sizeof(short);
-	dp->size += sizeof(short);
+	memcpy(c, dp->pointer, sizeof(int16_t));
+	dp->pointer += sizeof(int16_t);
+	dp->size += sizeof(int16_t);
 }
 
-void joynet_putw(JOYNET_SERIAL_DATA * dp, short c)
+void joynet_putw(JOYNET_SERIAL_DATA * dp, int16_t c)
 {
-	memcpy(dp->pointer, &c, sizeof(short));
-	dp->pointer += sizeof(short);
-	dp->size += sizeof(short);
+	memcpy(dp->pointer, &c, sizeof(int16_t));
+	dp->pointer += sizeof(int16_t);
+	dp->size += sizeof(int16_t);
 }
 
-void joynet_getl(JOYNET_SERIAL_DATA * dp, long * c)
+void joynet_getl(JOYNET_SERIAL_DATA * dp, int32_t * c)
 {
-	memcpy(c, dp->pointer, sizeof(long));
-	dp->pointer += sizeof(long);
-	dp->size += sizeof(long);
+	memcpy(c, dp->pointer, sizeof(int32_t));
+	dp->pointer += sizeof(int32_t);
+	dp->size += sizeof(int32_t);
 }
 
-void joynet_putl(JOYNET_SERIAL_DATA * dp, long c)
+void joynet_putl(JOYNET_SERIAL_DATA * dp, int32_t c)
 {
-	memcpy(dp->pointer, &c, sizeof(long));
-	dp->pointer += sizeof(long);
-	dp->size += sizeof(long);
+	memcpy(dp->pointer, &c, sizeof(int32_t));
+	dp->pointer += sizeof(int32_t);
+	dp->size += sizeof(int32_t);
 }
 
 int joynet_get_serial_size(JOYNET_SERIAL_DATA * dp)

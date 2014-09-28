@@ -1,6 +1,7 @@
 #ifndef JOYNET_GAME_H
 #define JOYNET_GAME_H
 
+#include <stdint.h>
 #include "joynet.h"
 #include "message.h"
 
@@ -27,8 +28,8 @@
 typedef struct
 {
 	
-	int port; // which controller "port" is this plugged into
-	int backport; // which local controller is connected to this controller
+	int32_t port; // which controller "port" is this plugged into
+	int32_t backport; // which local controller is connected to this controller
 	
 	/* joysticks and such */
 	char button[JOYNET_GAME_MAX_CONTROLLER_BUTTONS];
@@ -42,12 +43,12 @@ typedef struct
 typedef struct
 {
 
-	int port; // which controller "port" is this plugged into
-	int backport; // which local controller is connected to this controller
+	int32_t port; // which controller "port" is this plugged into
+	int32_t backport; // which local controller is connected to this controller
 
-	short x;
-	short y;
-	short z;
+	int16_t x;
+	int16_t y;
+	int16_t z;
 	char b;
 
 } JOYNET_MOUSE;
@@ -59,13 +60,13 @@ typedef struct
 	int playing;
 	
 	char name[256];
-	unsigned long selected_content[JOYNET_GAME_MAX_CONTENT_LISTS]; // 0 means no selection
-	int selected_content_index[JOYNET_GAME_MAX_CONTENT_LISTS];     // index to content in local content list
+	uint32_t selected_content[JOYNET_GAME_MAX_CONTENT_LISTS]; // 0 means no selection
+	int32_t selected_content_index[JOYNET_GAME_MAX_CONTENT_LISTS];     // index to content in local content list
 	
 	/* options */
-	int * option[JOYNET_GAME_MAX_PLAYER_OPTIONS];
-	int server_option[JOYNET_GAME_MAX_PLAYER_OPTIONS];
-	int options;
+	int32_t * option[JOYNET_GAME_MAX_PLAYER_OPTIONS];
+	int32_t server_option[JOYNET_GAME_MAX_PLAYER_OPTIONS];
+	int32_t options;
 	
 	int local; // this player is local
 	int client;
@@ -90,8 +91,8 @@ typedef struct
 typedef struct
 {
 	
-	unsigned long hash[JOYNET_GAME_MAX_CONTENT_LIST_SIZE];
-	int count;
+	int32_t hash[JOYNET_GAME_MAX_CONTENT_LIST_SIZE];
+	int32_t count;
 	
 } JOYNET_CONTENT_LIST;
 
@@ -123,9 +124,9 @@ typedef struct
 	JOYNET_MOUSE * player_mouse[JOYNET_GAME_MAX_PLAYERS];
 	
 	/* options */
-	int * option[JOYNET_GAME_MAX_OPTIONS];
-	int server_option[JOYNET_GAME_MAX_OPTIONS];
-	int options;
+	int32_t * option[JOYNET_GAME_MAX_OPTIONS];
+	int32_t server_option[JOYNET_GAME_MAX_OPTIONS];
+	int32_t options;
 	
 	/* content */
 	JOYNET_CONTENT_LIST * local_content_list[JOYNET_GAME_MAX_CONTENT_LISTS];
