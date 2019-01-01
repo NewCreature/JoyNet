@@ -1,7 +1,7 @@
 #ifndef JOYNET_MESSAGE_H
 #define JOYNET_MESSAGE_H
 
-#include "enet-1.3.1/include/enet/enet.h"
+#include "enet/include/enet/enet.h"
 #include "joynet.h"
 
 void joynet_decode_message(JOYNET_MESSAGE * mp, ENetEvent * ep);

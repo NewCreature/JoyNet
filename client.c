@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-#include "enet-1.3.1/include/enet/enet.h"
+#include "enet/include/enet/enet.h"
 #include "joynet.h"
 #include "serialize.h"
 #include "message.h"
@@ -12,7 +12,7 @@ JOYNET_CLIENT * joynet_create_client(void)
 {
 	JOYNET_CLIENT * cp;
 	int i;
-	
+
 	cp = malloc(sizeof(JOYNET_CLIENT));
 	if(!cp)
 	{
@@ -48,7 +48,7 @@ void joynet_destroy_client(JOYNET_CLIENT * cp)
 int joynet_connect_client_to_server(JOYNET_CLIENT * cp, char * host, int port)
 {
 	ENetEvent event;
-	
+
 	if(enet_address_set_host(&cp->address, host) < 0)
 	{
 		return 0;
@@ -89,7 +89,7 @@ void joynet_set_client_group(JOYNET_CLIENT * cp, short group)
 {
 	char data[2];
 	ENetPacket * pp;
-	
+
 	if(cp->peer)
 	{
 		joynet_serialize(cp->serial_data, data);
@@ -111,7 +111,7 @@ void joynet_set_client_screen_name(JOYNET_CLIENT * cp, char * screen_name)
 void joynet_poll_client(JOYNET_CLIENT * cp)
 {
 	ENetEvent event;
-	
+
 	if(cp && cp->host && cp->peer)
 	{
 		while(enet_host_service(cp->host, &event, 0))
@@ -123,7 +123,7 @@ void joynet_poll_client(JOYNET_CLIENT * cp)
 				{
 					JOYNET_MESSAGE message;
 					joynet_decode_message(&message, &event);
-				
+
 					switch(event.channelID)
 					{
 						case JOYNET_CHANNEL_SYSTEM:
@@ -147,7 +147,7 @@ void joynet_poll_client(JOYNET_CLIENT * cp)
 					}
 					break;
 				}
-			   
+
 				case ENET_EVENT_TYPE_DISCONNECT:
 				{
 					break;
@@ -206,7 +206,7 @@ void joynet_set_client_voip_callback(JOYNET_CLIENT * cp, int(*callback)(int clie
 void joynet_send_client_voip_data(JOYNET_CLIENT * cp, void * data, int size)
 {
 	ENetPacket * pp;
-	
+
 	if(cp->peer)
 	{
 		pp = joynet_build_packet(JOYNET_CHAT_MESSAGE_VOIP, data, size);

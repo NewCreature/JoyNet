@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "enet-1.3.1/include/enet/enet.h"
+#include "enet/include/enet/enet.h"
 #include "joynet.h"
 #include "serialize.h"
 #include "message.h"
@@ -11,7 +11,7 @@ JOYNET_SERVER * joynet_create_server(void)
 {
 	JOYNET_SERVER * sp;
 	int i;
-	
+
 	sp = malloc(sizeof(JOYNET_SERVER));
 	if(!sp)
 	{
@@ -46,7 +46,7 @@ void joynet_destroy_server(JOYNET_SERVER * sp)
 int joynet_open_server(JOYNET_SERVER * sp, int port, int connections)
 {
 	int i;
-	
+
 	sp->address.host = ENET_HOST_ANY;
 	sp->address.port = port;
 	sp->host = enet_host_create(&sp->address, connections, 0, 0, 0);
@@ -71,7 +71,7 @@ int joynet_open_server(JOYNET_SERVER * sp, int port, int connections)
 void joynet_close_server(JOYNET_SERVER * sp)
 {
 	int i;
-	
+
 	for(i = 0; i < sp->max_clients; i++)
 	{
 		if(sp->client[i]->peer)
@@ -96,7 +96,7 @@ void joynet_set_server_id(JOYNET_SERVER * sp, char * id)
 static int joynet_server_find_free_client(JOYNET_SERVER * sp)
 {
 	int i;
-	
+
 	for(i = 0; i < sp->max_clients; i++)
 	{
 		if(!sp->client[i]->peer)
@@ -119,7 +119,7 @@ void joynet_poll_server(JOYNET_SERVER * sp)
 				case ENET_EVENT_TYPE_CONNECT:
 				{
 					int client = joynet_server_find_free_client(sp);
-					
+
 					if(client >= 0)
 					{
 						sp->client[client]->peer = sp->event.peer;
@@ -136,16 +136,20 @@ void joynet_poll_server(JOYNET_SERVER * sp)
 					}
 					sp->client[client]->user = client;
 					strcpy(sp->client[client]->screen_name, "");
+					sp->client[client]->master = 0;
+					sp->client[client]->playing = 0;
+					sp->client[client]->spectating = 0;
 					break;
 				}
-				
+
 				/* client disconnected */
 				case ENET_EVENT_TYPE_DISCONNECT:
 				{
-					sp->client[joynet_get_client_from_peer(sp, sp->event.peer)]->peer = NULL;
+					int client = joynet_get_client_from_peer(sp, sp->event.peer);
+					sp->client[client]->peer = NULL;
 					break;
 				}
-				
+
 				/* packet received */
 				case ENET_EVENT_TYPE_RECEIVE:
 				{
@@ -168,7 +172,7 @@ void joynet_poll_server(JOYNET_SERVER * sp)
 							break;
 						}
 					}
-					
+
 					if(sp->channel_callback[sp->event.channelID])
 					{
 						sp->channel_callback[sp->event.channelID](&message);
@@ -194,11 +198,11 @@ void joynet_poll_server(JOYNET_SERVER * sp)
 
 int joynet_get_client_from_peer(JOYNET_SERVER * sp, ENetPeer * pp)
 {
-	long client;
-	
+	int32_t client;
+
 	joynet_serialize(sp->serial_data, pp->data);
 	joynet_getl(sp->serial_data, &client);
-	
+
 	return client;
 }
 

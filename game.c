@@ -33,7 +33,7 @@ int joynet_qsort_controllers(const void * e1, const void * e2)
 void joynet_reset_game(JOYNET_GAME * gp)
 {
 	int i;
-	
+
 	for(i = 0; i < gp->players; i++)
 	{
 		if(gp->player[i]->playing)
@@ -63,7 +63,7 @@ JOYNET_GAME * joynet_create_game(char * name, int type, int max_players, int max
 {
 	JOYNET_GAME * gp;
 	int i;
-	
+
 	gp = malloc(sizeof(JOYNET_GAME));
 	if(!gp)
 	{
@@ -150,7 +150,7 @@ void joynet_setup_game_controllers(JOYNET_GAME * gp, int buttons, int axes, int 
 void joynet_destroy_game(JOYNET_GAME * gp)
 {
 	int i;
-	
+
 	joynet_destroy_serial_data(gp->serial_data);
 	for(i = 0; i < gp->players; i++)
 	{
@@ -205,7 +205,7 @@ int joynet_connect_to_game_server(JOYNET_GAME * gp, JOYNET_CLIENT * cp, char * a
 {
 	char data[256];
 	ENetPacket * pp;
-	
+
 	if(joynet_connect_client_to_server(cp, address, port))
 	{
 		joynet_serialize(cp->serial_data, data);
@@ -233,7 +233,7 @@ void joynet_connect_to_game(JOYNET_GAME * gp, short controller, short player)
 	ENetPacket * pp;
 	int assigned_player = player;
 	int i;
-	
+
 	if(gp->client)
 	{
 		joynet_serialize(gp->client->serial_data, data);
@@ -278,14 +278,14 @@ void joynet_connect_to_game(JOYNET_GAME * gp, short controller, short player)
 				{
 					gp->mouse[controller]->port = assigned_player;
 				}
-				
+
 				/* reset selections to prevent bugs */
 				memset(gp->player[assigned_player]->selected_content, 0, sizeof(unsigned long) * JOYNET_GAME_MAX_CONTENT_LISTS);
-				memset(gp->player[assigned_player]->selected_content_index, 0, sizeof(int) * JOYNET_GAME_MAX_CONTENT_LISTS);			
+				memset(gp->player[assigned_player]->selected_content_index, 0, sizeof(int) * JOYNET_GAME_MAX_CONTENT_LISTS);
 				if(gp->callback)
 				{
 					JOYNET_MESSAGE message;
-					
+
 					/* send connect message */
 					message.type = JOYNET_GAME_MESSAGE_CONNECT;
 					joynet_serialize(gp->serial_data, data);
@@ -295,7 +295,7 @@ void joynet_connect_to_game(JOYNET_GAME * gp, short controller, short player)
 					message.data_size = 4;
 					message.event = NULL;
 					gp->callback(&message);
-					
+
 					/* send add player message */
 					message.type = JOYNET_GAME_MESSAGE_ADD_PLAYER;
 					joynet_serialize(gp->serial_data, data);
@@ -316,7 +316,7 @@ void joynet_disconnect_from_game(JOYNET_GAME * gp, short controller, short playe
 {
 	char data[4] = {0};
 	ENetPacket * pp;
-	
+
 	if(gp->client)
 	{
 		joynet_serialize(gp->client->serial_data, data);
@@ -342,7 +342,7 @@ void joynet_disconnect_from_game(JOYNET_GAME * gp, short controller, short playe
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		gp->player[player]->playing = 0;
 		if(gp->type == JOYNET_GAME_TYPE_CONTROLLERS)
 		{
@@ -355,7 +355,7 @@ void joynet_disconnect_from_game(JOYNET_GAME * gp, short controller, short playe
 		gp->player_count--;
 		if(gp->callback)
 		{
-			
+
 			/* disconnect player */
 			joynet_serialize(gp->serial_data, data);
 			joynet_putw(gp->serial_data, controller);
@@ -365,7 +365,7 @@ void joynet_disconnect_from_game(JOYNET_GAME * gp, short controller, short playe
 			message.data_size = joynet_get_serial_size(gp->serial_data);
 			message.event = NULL;
 			gp->callback(&message);
-			
+
 			/* remove player */
 			joynet_serialize(gp->serial_data, data);
 			joynet_putw(gp->serial_data, player);
@@ -422,7 +422,7 @@ void joynet_update_game_option(JOYNET_GAME * gp, int * option)
 	char data[1024] = {0};
 	ENetPacket * pp;
 	int i, c = 0;
-	
+
 	if(gp->client && gp->client->master)
 	{
 		for(i = 0; i < gp->options; i++)
@@ -452,7 +452,7 @@ void joynet_update_game_options(JOYNET_GAME * gp)
 	char data[1024] = {0};
 	ENetPacket * pp;
 	int i;
-	
+
 	if(gp->client && gp->client->master)
 	{
 		joynet_serialize(gp->client->serial_data, data);
@@ -475,7 +475,7 @@ void joynet_update_player_options(JOYNET_GAME * gp, int player)
 	char data[1024] = {0};
 	ENetPacket * pp;
 	int i;
-	
+
 	if(gp->client && gp->player[player]->local)
 	{
 		joynet_serialize(gp->client->serial_data, data);
@@ -559,7 +559,7 @@ void joynet_select_game_content(JOYNET_GAME * gp, int player, int list, unsigned
 	char data[8];
 	ENetPacket * pp;
 	int i;
-	
+
 	if(gp->client)
 	{
 		joynet_serialize(gp->client->serial_data, data);
@@ -572,7 +572,7 @@ void joynet_select_game_content(JOYNET_GAME * gp, int player, int list, unsigned
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		gp->player[player]->selected_content[list] = hash;
 		for(i = 0; i < gp->local_content_list[list]->count; i++)
 		{
@@ -597,11 +597,11 @@ void joynet_select_game_content(JOYNET_GAME * gp, int player, int list, unsigned
 	}
 }
 
-void joynet_start_game(JOYNET_GAME * gp)
+int joynet_start_game(JOYNET_GAME * gp)
 {
 	ENetPacket * pp;
 	int i;
-	
+
 	if(gp->client)
 	{
 		if(gp->client->master && gp->state == JOYNET_GAME_STATE_OFF)
@@ -621,41 +621,39 @@ void joynet_start_game(JOYNET_GAME * gp)
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		if(gp->state == JOYNET_GAME_STATE_OFF)
 		{
 			switch(gp->type)
 			{
 				case JOYNET_GAME_TYPE_MOUSE:
 				{
-					gp->input_buffer = malloc(sizeof(JOYNET_INPUT_BUFFER));
-					if(gp->input_buffer)
-					{
-						gp->input_buffer->frame_size = gp->controller_axes * 2 + (gp->controller_buttons > 0 ? 1 : 0);
-						gp->input_buffer->data = malloc(gp->input_buffer->frame_size * gp->max_buffer_frames);
-					}
+                    gp->input_buffer = joynet_create_input_buffer(gp->controller_axes * 2 + (gp->controller_buttons > 0 ? 1 : 0), gp->max_buffer_frames);
+                    if(!gp->input_buffer)
+                    {
+                        return 0;
+                    }
 					break;
 				}
 				case JOYNET_GAME_TYPE_CONTROLLERS:
 				{
-					
+
 					/* create input buffer */
-					gp->input_buffer = malloc(sizeof(JOYNET_INPUT_BUFFER));
-					if(gp->input_buffer)
-					{
-						int bsize = 0;
-						if(gp->controller_buttons > 0)
-						{
-							bsize++;
-						}
-						if(gp->controller_buttons > 8)
-						{
-							bsize++;
-						}
-						gp->input_buffer->frame_size = gp->player_count * (gp->controller_axes + bsize);
-						gp->input_buffer->data = malloc(gp->input_buffer->frame_size * gp->max_buffer_frames);
-					}
-					
+                    int bsize = 0;
+                    if(gp->controller_buttons > 0)
+                    {
+                        bsize++;
+                    }
+                    if(gp->controller_buttons > 8)
+                    {
+                        bsize++;
+                    }
+                    gp->input_buffer = joynet_create_input_buffer(gp->player_count * (gp->controller_axes + bsize), gp->max_buffer_frames);
+                    if(!gp->input_buffer)
+                    {
+                        return 0;
+                    }
+
 					if(gp->type == JOYNET_GAME_TYPE_CONTROLLERS)
 					{
 						for(i = 0; i < gp->controllers; i++)
@@ -676,12 +674,6 @@ void joynet_start_game(JOYNET_GAME * gp)
 					break;
 				}
 			}
-			gp->input_buffer->frames = 0;
-			gp->input_buffer->read_pos = 0;
-			gp->input_buffer->write_pos = 0;
-			gp->input_buffer->previous_write_pos = 0;
-			gp->input_buffer->filled_frames = 0;
-			gp->input_buffer->read_frames = 0;
 			gp->state = JOYNET_GAME_STATE_PLAYING;
 			if(gp->callback)
 			{
@@ -693,6 +685,7 @@ void joynet_start_game(JOYNET_GAME * gp)
 			}
 		}
 	}
+    return 1;
 }
 
 void joynet_pause_game(JOYNET_GAME * gp)
@@ -709,7 +702,7 @@ void joynet_pause_game(JOYNET_GAME * gp)
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		if(gp->state == JOYNET_GAME_STATE_PLAYING)
 		{
 			gp->state = JOYNET_GAME_STATE_PAUSED;
@@ -739,7 +732,7 @@ void joynet_resume_game(JOYNET_GAME * gp)
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		if(gp->state == JOYNET_GAME_STATE_PAUSED)
 		{
 			gp->state = JOYNET_GAME_STATE_PLAYING;
@@ -769,7 +762,7 @@ void joynet_end_game(JOYNET_GAME * gp)
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		if(gp->state == JOYNET_GAME_STATE_PLAYING || gp->state == JOYNET_GAME_STATE_PAUSED)
 		{
 			gp->state = JOYNET_GAME_STATE_OFF;
@@ -802,7 +795,7 @@ void joynet_select_player(JOYNET_GAME * gp, int player)
 	else
 	{
 		JOYNET_MESSAGE message;
-		
+
 		if(gp->callback)
 		{
 			message.type = JOYNET_GAME_MESSAGE_SELECT_PLAYER;
@@ -820,12 +813,12 @@ int joynet_encode_game_input(JOYNET_GAME * gp, char * buffer)
 {
 	joynet_serialize(gp->serial_data, buffer);
 	int i, j;
-	
+
 	switch(gp->type)
 	{
 		case JOYNET_GAME_TYPE_MOUSE:
 		{
-			
+
 			/* see if any of the local players are the current player */
 			if(gp->controller_axes > 0)
 			{
@@ -847,10 +840,10 @@ int joynet_encode_game_input(JOYNET_GAME * gp, char * buffer)
 		}
 		case JOYNET_GAME_TYPE_CONTROLLERS:
 		{
-			
+
 			unsigned char axis_data;
 			char cbits = 1;
-			
+
 			for(i = 0; i < gp->controllers; i++)
 			{
 				if(gp->controller[gp->controller_sort_data[i].index]->port >= 0)
@@ -902,12 +895,6 @@ void joynet_decode_game_input(JOYNET_GAME * gp)
 {
 }
 
-/* return how many frames we have left to process */
-int joynet_game_input_frames(JOYNET_GAME * gp)
-{
-	return gp->input_buffer->frames;
-}
-
 /* encode and send one frame of input data */
 /* if process is true, input will be sent (online play) */
 void joynet_update_game(JOYNET_GAME * gp, int process)
@@ -916,7 +903,7 @@ void joynet_update_game(JOYNET_GAME * gp, int process)
 	char data[1024];
 	if(gp->client)
 	{
-		if(process)
+		if(gp->player[gp->current_player]->local && process)
 		{
 			if(joynet_encode_game_input(gp, data))
 			{
@@ -929,14 +916,7 @@ void joynet_update_game(JOYNET_GAME * gp, int process)
 	{
 		if(joynet_encode_game_input(gp, data))
 		{
-			memcpy(&(gp->input_buffer->data[gp->input_buffer->write_pos]), data, gp->input_buffer->frame_size);
-//			printf("data - %d - %d\n", data[0], data[1]);
-			gp->input_buffer->write_pos += gp->input_buffer->frame_size;
-			if(gp->input_buffer->write_pos >= gp->input_buffer->frame_size * gp->max_buffer_frames)
-			{
-				gp->input_buffer->write_pos = 0;
-			}
-			gp->input_buffer->frames++;
+            joynet_write_input_buffer_frame(gp->input_buffer, data);
 		}
 		else
 		{
@@ -953,41 +933,49 @@ void joynet_update_game_server(JOYNET_SERVER * sp, JOYNET_GAME * gp)
 	ENetPacket * pp;
 	char data[1024];
 	int i, j;
-	
+
 	if(gp->state == JOYNET_GAME_STATE_PLAYING)
 	{
 		switch(gp->type)
 		{
 			case JOYNET_GAME_TYPE_MOUSE:
 			{
-				if(gp->received_input)
+				if(gp->input_buffer->frames)
 				{
-					joynet_serialize(sp->serial_data, data);
-					if(joynet_current_server_game->controller_axes > 0)
-					{
-						joynet_putw(sp->serial_data, joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->x);
-					}
-					if(joynet_current_server_game->controller_axes > 1)
-					{
-						joynet_putw(sp->serial_data, joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->y);
-					}
-					if(joynet_current_server_game->controller_axes > 2)
-					{
-						joynet_putw(sp->serial_data, joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->z);
-					}
-					if(joynet_current_server_game->controller_buttons > 0)
-					{
-						joynet_putc(sp->serial_data, joynet_current_server_game->player_mouse[joynet_current_server_game->current_player]->b);
-					}
+                    /* pull the next input frame from the buffer and send it to
+                       everyone */
+                    joynet_read_input_buffer_frame(joynet_current_server_game->input_buffer, data);
 					for(i = 0; i < sp->max_clients; i++)
 					{
 						if(sp->client[i]->peer && (sp->client[i]->playing || sp->client[i]->spectating == 1))
 						{
-							pp = joynet_create_packet(JOYNET_GAME_MESSAGE_INPUT, sp->serial_data);
+							pp = joynet_build_packet(JOYNET_GAME_MESSAGE_INPUT, data, joynet_current_server_game->input_buffer->frame_size);
 							enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_GAME, pp);
 						}
 					}
+
+                    /* decode the input so we have a copy of the current inputs
+                       on the server */
+                    joynet_serialize(gp->serial_data, data);
+                    if(gp->controller_axes > 0)
+    				{
+    					joynet_getw(gp->serial_data, &gp->player_mouse[0]->x);
+    				}
+    				if(gp->controller_axes > 1)
+    				{
+    					joynet_getw(gp->serial_data, &gp->player_mouse[0]->y);
+    				}
+    				if(gp->controller_axes > 2)
+    				{
+    					joynet_getw(gp->serial_data, &gp->player_mouse[0]->z);
+    				}
+    				if(gp->controller_buttons > 0)
+    				{
+    					joynet_getc(gp->serial_data, &gp->player_mouse[0]->b);
+    				}
 				}
+
+                /* if we have no buffered input, send NO_INPUT message */
 				else
 				{
 					for(i = 0; i < sp->max_clients; i++)
@@ -1003,95 +991,39 @@ void joynet_update_game_server(JOYNET_SERVER * sp, JOYNET_GAME * gp)
 			}
 			case JOYNET_GAME_TYPE_CONTROLLERS:
 			{
-				unsigned char axis_data;
-				char cbits = 1;
-				joynet_serialize(sp->serial_data, data);
-				for(i = 0; i < joynet_current_server_game->players; i++)
-				{
-					if(joynet_current_server_game->player[i]->playing)
-					{
-						for(j = 0; j < joynet_current_server_game->controller_axes; j++)
-						{
-							axis_data = (unsigned char)((joynet_current_server_game->player_controller[i]->axis[j] + 1.0) * 127.5);
-							joynet_putc(sp->serial_data, axis_data);
-						}
-						if(joynet_current_server_game->controller_buttons > 0)
-						{
-							joynet_putc(sp->serial_data, joynet_current_server_game->player_controller[i]->bits[0]);
-						}
-						if(joynet_current_server_game->controller_buttons > 8)
-						{
-							joynet_current_server_game->player_controller[i]->bits[1] = 0;
-							for(j = 0; j < 8; j++)
-							{
-								if(joynet_current_server_game->player_controller[i]->button[i])
-								{
-									joynet_current_server_game->player_controller[i]->bits[1] |= cbits;
-								}
-								cbits = cbits << 1;
-							}
-							joynet_putc(sp->serial_data, joynet_current_server_game->player_controller[i]->bits[1]);
-						}
-					}
-				}
-				for(i = 0; i < sp->max_clients; i++)
-				{
-					if(sp->client[i]->peer && (sp->client[i]->playing || sp->client[i]->spectating == 1))
-					{
-						pp = joynet_create_packet(JOYNET_GAME_MESSAGE_INPUT, sp->serial_data);
-						enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_GAME, pp);
-					}
-				}
-				break;
-			}
-		}
-		gp->received_input = 0;
-	}
-}
+                /* read next input frame and send to everyone */
+                if(joynet_current_server_game->input_buffer->frames)
+                {
+                    joynet_read_input_buffer_frame(joynet_current_server_game->input_buffer, data);
+                    for(i = 0; i < sp->max_clients; i++)
+    				{
+    					if(sp->client[i]->peer && (sp->client[i]->playing || sp->client[i]->spectating == 1))
+    					{
+    						pp = joynet_build_packet(JOYNET_GAME_MESSAGE_INPUT, data, joynet_current_server_game->input_buffer->frame_size);
+    						enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_GAME, pp);
+    					}
+    				}
+                }
 
-/* decode one input frame and update player controllers to reflect this */   
-void joynet_game_logic(JOYNET_GAME * gp)
-{
-	if(gp->input_buffer->frames > 0)
-	{
-		switch(gp->type)
-		{
-			case JOYNET_GAME_TYPE_MOUSE:
-			{
-				joynet_serialize(gp->serial_data, &gp->input_buffer->data[gp->input_buffer->read_pos]);
-				if(gp->controller_axes > 0)
-				{
-					joynet_getw(gp->serial_data, &gp->player_mouse[0]->x);
-				}
-				if(gp->controller_axes > 1)
-				{
-					joynet_getw(gp->serial_data, &gp->player_mouse[0]->y);
-				}
-				if(gp->controller_axes > 2)
-				{
-					joynet_getw(gp->serial_data, &gp->player_mouse[0]->z);
-				}
-				if(gp->controller_buttons > 0)
-				{
-					joynet_getc(gp->serial_data, &gp->player_mouse[0]->b);
-				}
-				gp->input_buffer->read_pos += joynet_get_serial_size(gp->serial_data);
-				if(gp->input_buffer->read_pos >= gp->max_buffer_frames * gp->input_buffer->frame_size)
-				{
-					gp->input_buffer->read_pos = 0;
-				}
-				break;
-			}
-			case JOYNET_GAME_TYPE_CONTROLLERS:
-			{
+                /* send NO_INPUT message if we don't have anything in the buffer */
+                else
+                {
+                    for(i = 0; i < sp->max_clients; i++)
+					{
+						if(sp->client[i]->peer && (sp->client[i]->playing || sp->client[i]->spectating == 1))
+						{
+							pp = joynet_create_packet(JOYNET_GAME_MESSAGE_NO_INPUT, NULL);
+							enet_peer_send(sp->client[i]->peer, JOYNET_CHANNEL_GAME, pp);
+						}
+					}
+                }
+
 				unsigned char axis_data;
-				int i, j;
-				
-				for(i = 0; i < gp->players; i++)
+				joynet_serialize(gp->serial_data, data);
+                for(i = 0; i < gp->players; i++)
 				{
 					if(gp->player[i]->playing)
 					{
-						joynet_serialize(gp->serial_data, &gp->input_buffer->data[gp->input_buffer->read_pos]);
 						if(gp->controller_axes > 0)
 						{
 							joynet_getc(gp->serial_data, (char *)(&axis_data));
@@ -1114,7 +1046,6 @@ void joynet_game_logic(JOYNET_GAME * gp)
 							{
 								gp->player_controller[i]->button[j] = ((gp->player_controller[i]->bits[0] >> j) & 1);
 							}
-//								printf("bits = %d\n", gp->player[i]->controller->bits[0]);
 						}
 						if(gp->controller_buttons > 8)
 						{
@@ -1124,17 +1055,91 @@ void joynet_game_logic(JOYNET_GAME * gp)
 								gp->player_controller[i]->button[j + 8] = ((gp->player_controller[i]->bits[1] >> j) & 1);
 							}
 						}
-						gp->input_buffer->read_pos += joynet_get_serial_size(gp->serial_data);
-						if(gp->input_buffer->read_pos >= gp->max_buffer_frames * gp->input_buffer->frame_size)
+					}
+				}
+				break;
+			}
+		}
+	}
+}
+
+/* decode one input frame and update player controllers to reflect this */
+void joynet_game_logic(JOYNET_GAME * gp)
+{
+    char data[1024];
+
+    if(gp->input_buffer->frames > 0)
+	{
+		switch(gp->type)
+		{
+			case JOYNET_GAME_TYPE_MOUSE:
+			{
+                joynet_read_input_buffer_frame(gp->input_buffer, data);
+				joynet_serialize(gp->serial_data, data);
+				if(gp->controller_axes > 0)
+				{
+					joynet_getw(gp->serial_data, &gp->player_mouse[0]->x);
+				}
+				if(gp->controller_axes > 1)
+				{
+					joynet_getw(gp->serial_data, &gp->player_mouse[0]->y);
+				}
+				if(gp->controller_axes > 2)
+				{
+					joynet_getw(gp->serial_data, &gp->player_mouse[0]->z);
+				}
+				if(gp->controller_buttons > 0)
+				{
+					joynet_getc(gp->serial_data, &gp->player_mouse[0]->b);
+				}
+				break;
+			}
+			case JOYNET_GAME_TYPE_CONTROLLERS:
+			{
+				unsigned char axis_data;
+				int i, j;
+
+				joynet_read_input_buffer_frame(gp->input_buffer, data);
+                joynet_serialize(gp->serial_data, data);
+                for(i = 0; i < gp->players; i++)
+				{
+					if(gp->player[i]->playing)
+					{
+						if(gp->controller_axes > 0)
 						{
-							gp->input_buffer->read_pos = 0;
+							joynet_getc(gp->serial_data, (char *)(&axis_data));
+							gp->player_controller[i]->axis[0] = (float)axis_data / 127.5 - 1.0;
+						}
+						if(gp->controller_axes > 1)
+						{
+							joynet_getc(gp->serial_data, (char *)(&axis_data));
+							gp->player_controller[i]->axis[1] = (float)axis_data / 127.5 - 1.0;
+						}
+						if(gp->controller_axes > 2)
+						{
+							joynet_getc(gp->serial_data, (char *)(&axis_data));
+							gp->player_controller[i]->axis[2] = (float)axis_data / 127.5 - 1.0;
+						}
+						if(gp->controller_buttons > 0)
+						{
+							joynet_getc(gp->serial_data, &gp->player_controller[i]->bits[0]);
+							for(j = 0; j < 8; j++)
+							{
+								gp->player_controller[i]->button[j] = ((gp->player_controller[i]->bits[0] >> j) & 1);
+							}
+						}
+						if(gp->controller_buttons > 8)
+						{
+							joynet_getc(gp->serial_data, &gp->player_controller[i]->bits[1]);
+							for(j = 0; j < 8; j++)
+							{
+								gp->player_controller[i]->button[j + 8] = ((gp->player_controller[i]->bits[1] >> j) & 1);
+							}
 						}
 					}
 				}
 				break;
 			}
 		}
-		gp->input_buffer->read_frames++;
-		gp->input_buffer->frames--;
 	}
 }

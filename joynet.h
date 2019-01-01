@@ -1,7 +1,7 @@
 #ifndef JOYNET3_H
 #define JOYNET3_H
 
-#include "enet-1.3.1/include/enet/enet.h"
+#include "enet/include/enet/enet.h"
 #include "structs.h"
 
 #define JOYNET_CHANNEL_SYSTEM 0 // system channel used for setting up connections
@@ -22,6 +22,8 @@
 #define JOYNET_CHAT_MESSAGE_GROUP_TALK  3
 #define JOYNET_CHAT_MESSAGE_VOIP        4
 #define JOYNET_CHAT_MESSAGE_GROUP_VOIP  5
+
+extern int joynet_swap_endianess;
 
 int joynet_init(void);
 void joynet_exit(void);

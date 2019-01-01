@@ -1,11 +1,29 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "enet-1.3.1/include/enet/enet.h"
+#include "enet/include/enet/enet.h"
 #include "joynet.h"
 #include "serialize.h"
 
 static long joynet_random_seed = 0;
+int joynet_swap_endianess = 0;
+
+static void joynet_detect_endianess(void)
+{
+	unsigned long Value32;
+	unsigned char * VPtr = (unsigned char *)&Value32;
+
+	VPtr[0] = VPtr[1] = VPtr[2] = 0; VPtr[3] = 1;
+
+	if(Value32 == 1)
+	{
+		joynet_swap_endianess = 1; // big endian
+	}
+	else
+	{
+		joynet_swap_endianess = 0; // little endian
+	}
+}
 
 int joynet_init(void)
 {
@@ -13,6 +31,7 @@ int joynet_init(void)
 	{
 		return 0;
 	}
+	joynet_detect_endianess();
 	return 1;
 }
 
@@ -26,7 +45,7 @@ void joynet_ping(const char * url, int port)
 	ENetAddress address;
 	ENetHost * host;
 	ENetPeer * peer;
-	
+
 	if(enet_address_set_host(&address, url) < 0)
 	{
 		return;

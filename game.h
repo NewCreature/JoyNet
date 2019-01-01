@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "joynet.h"
 #include "message.h"
+#include "input_buffer.h"
 
 /* what type of game are we? */
 #define JOYNET_GAME_TYPE_CONTROLLERS  0
@@ -27,17 +28,17 @@
 
 typedef struct
 {
-	
+
 	int32_t port; // which controller "port" is this plugged into
 	int32_t backport; // which local controller is connected to this controller
-	
+
 	/* joysticks and such */
 	char button[JOYNET_GAME_MAX_CONTROLLER_BUTTONS];
 	float axis[JOYNET_GAME_MAX_CONTROLLER_AXES]; // convert these to char to upload
-	
+
 	/* button bits for controllers */
 	char bits[2];
-	
+
 } JOYNET_CONTROLLER;
 
 typedef struct
@@ -55,53 +56,38 @@ typedef struct
 
 typedef struct
 {
-	
+
 //	JOYNET_CONTROLLER * controller;
 	int playing;
-	
+
 	char name[256];
 	uint32_t selected_content[JOYNET_GAME_MAX_CONTENT_LISTS]; // 0 means no selection
 	int32_t selected_content_index[JOYNET_GAME_MAX_CONTENT_LISTS];     // index to content in local content list
-	
+
 	/* options */
 	int32_t * option[JOYNET_GAME_MAX_PLAYER_OPTIONS];
 	int32_t server_option[JOYNET_GAME_MAX_PLAYER_OPTIONS];
 	int32_t options;
-	
+
 	int local; // this player is local
 	int client;
-	
+
 } JOYNET_PLAYER;
 
 typedef struct
 {
-	
-	char * data;
-	
-	int read_pos;
-	int write_pos;
-	int previous_write_pos;
-	int frames;
-	int frame_size;
-	int filled_frames;
-	int read_frames;
-	
-} JOYNET_INPUT_BUFFER;
 
-typedef struct
-{
-	
 	int32_t hash[JOYNET_GAME_MAX_CONTENT_LIST_SIZE];
 	int32_t count;
-	
+
 } JOYNET_CONTENT_LIST;
 
 typedef struct
 {
-	
+
 	int port;
 	int index;
-	
+
 } JOYNET_CONTROLLER_SORT_DATA;
 
 typedef struct
@@ -109,38 +95,38 @@ typedef struct
 	int type;
 	int state;
 	char name[256];
-	
+
 	/* players */
 	JOYNET_PLAYER * player[JOYNET_GAME_MAX_PLAYERS];
 	int players;
 	int player_count;
-	
+
 	/* local controllers (use these to store controls to send to server) */
 	JOYNET_CONTROLLER * controller[JOYNET_GAME_MAX_CONTROLLERS];
 	JOYNET_MOUSE * mouse[JOYNET_GAME_MAX_CONTROLLERS];
-	
+
 	/* player controllers (use these in your game logic) */
 	JOYNET_CONTROLLER * player_controller[JOYNET_GAME_MAX_PLAYERS];
 	JOYNET_MOUSE * player_mouse[JOYNET_GAME_MAX_PLAYERS];
-	
+
 	/* options */
 	int32_t * option[JOYNET_GAME_MAX_OPTIONS];
 	int32_t server_option[JOYNET_GAME_MAX_OPTIONS];
 	int32_t options;
-	
+
 	/* content */
 	JOYNET_CONTENT_LIST * local_content_list[JOYNET_GAME_MAX_CONTENT_LISTS];
 	JOYNET_CONTENT_LIST * content_list[JOYNET_GAME_MAX_CONTENT_LISTS]; // this is the content that everyone has
-	
+
 	/* networking */
 	JOYNET_SERVER * server;
 	JOYNET_CLIENT * client;
 	int(*callback)(JOYNET_MESSAGE * mp); // used for local play
-	
+
 	/* server stuff */
 	JOYNET_CONTENT_LIST * server_content_list[JOYNET_GAME_MAX_PLAYERS][JOYNET_GAME_MAX_CONTENT_LISTS];
 	JOYNET_CONTENT_LIST * server_master_content_list[JOYNET_GAME_MAX_CONTENT_LISTS]; // the content that everyone has
-	
+
 	/* used to encode/decode input messages */
 	int controllers;
 	int controller_buttons;
@@ -149,11 +135,10 @@ typedef struct
 	JOYNET_INPUT_BUFFER * input_buffer;
 	int current_player;
 	int current_client;
-	int received_input;
 	JOYNET_CONTROLLER_SORT_DATA controller_sort_data[JOYNET_GAME_MAX_CONTROLLERS];
-	
+
 	JOYNET_SERIAL_DATA * serial_data;
-	
+
 } JOYNET_GAME;
 
 extern JOYNET_GAME * joynet_current_game;
@@ -186,12 +171,12 @@ void joynet_add_game_content(JOYNET_GAME * gp, int list, unsigned long hash);
 void joynet_select_game_content(JOYNET_GAME * gp, int player, int list, unsigned long hash);
 
 /* game functions */
-void joynet_start_game(JOYNET_GAME * gp);
+int joynet_start_game(JOYNET_GAME * gp);
 void joynet_pause_game(JOYNET_GAME * gp);
 void joynet_resume_game(JOYNET_GAME * gp);
 void joynet_end_game(JOYNET_GAME * gp);
 void joynet_select_player(JOYNET_GAME * gp, int player); // for shared-mouse turn-based games
-int joynet_game_input_frames(JOYNET_GAME * gp);
+int joynet_encode_game_input(JOYNET_GAME * gp, char * buffer);
 void joynet_update_game(JOYNET_GAME * gp, int process);
 void joynet_update_game_server(JOYNET_SERVER * sp, JOYNET_GAME * gp);
 void joynet_game_logic(JOYNET_GAME * gp);
